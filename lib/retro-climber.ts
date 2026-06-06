@@ -270,6 +270,8 @@ export class GameEngine {
 
   // Assets
   private walkSprite = new Image();
+  private idleSprite = new Image();
+  private jumpSprite = new Image();
   private coinSprite = new Image();
   private groundBg = new Image();
   private skyBg = new Image();
@@ -340,7 +342,7 @@ export class GameEngine {
     let loaded = 0;
     const onAssetLoad = () => {
       loaded++;
-      if (loaded === 4) {
+      if (loaded === 6) {
         this.assetsLoaded = true;
         this.resetGame();
         this.drawStartScreen();
@@ -351,8 +353,9 @@ export class GameEngine {
       console.warn(`Asset failed to load: ${src}. Generating pixelated fallback.`);
       // Create colored dummy image
       const canvas = document.createElement('canvas');
-      canvas.width = name === 'walk' || name === 'coin' ? 1536 : 937;
-      canvas.height = name === 'walk' || name === 'coin' ? 256 : 1678;
+      const isSpriteSheet = name === 'walk' || name === 'coin';
+      canvas.width = isSpriteSheet ? 1536 : name === 'idle' || name === 'jump' ? 256 : 937;
+      canvas.height = isSpriteSheet ? 256 : name === 'idle' || name === 'jump' ? 256 : 1678;
       const ctx = canvas.getContext('2d')!;
       
       if (name === 'walk') {
@@ -367,7 +370,14 @@ export class GameEngine {
           ctx.fillRect(i * 256 + 80 + (i % 2) * 20, 192, 30, 40);
           ctx.fillRect(i * 256 + 140 - (i % 2) * 20, 192, 30, 40);
         }
-      } else if (name === 'coin') {
+      } else if (name === 'idle' || name === 'jump') {
+        ctx.fillStyle = fallbackColor;
+        ctx.fillRect(64, 64, 128, 128);
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(140, 90, 20, 20);
+        ctx.fillStyle = '#ff3f80';
+        ctx.fillRect(100, 192, 30, 40);
+        ctx.fillRect(130, 192, 30, 40);
       } else if (name === 'coin') {
         // Draw 6 frames of spinning golden coin
         for (let i = 0; i < 6; i++) {
@@ -396,6 +406,8 @@ export class GameEngine {
       img.src = canvas.toDataURL();
       img.onload = () => {
         if (name === 'walk') this.walkSprite = img;
+        if (name === 'idle') this.idleSprite = img;
+        if (name === 'jump') this.jumpSprite = img;
         if (name === 'coin') this.coinSprite = img;
         if (name === 'ground') this.groundBg = img;
         if (name === 'sky') this.skyBg = img;
@@ -407,6 +419,16 @@ export class GameEngine {
     this.walkSprite.src = '/walk.png';
     this.walkSprite.onload = onAssetLoad;
     this.walkSprite.onerror = () => handleLoadError('walk', '#ec4899', '/walk.png');
+
+    // Load Idle Sprite
+    this.idleSprite.src = '/idle.png';
+    this.idleSprite.onload = onAssetLoad;
+    this.idleSprite.onerror = () => handleLoadError('idle', '#a78bfa', '/idle.png');
+
+    // Load Jump Sprite
+    this.jumpSprite.src = '/jump.png';
+    this.jumpSprite.onload = onAssetLoad;
+    this.jumpSprite.onerror = () => handleLoadError('jump', '#f472b6', '/jump.png');
 
     // Load Coin Sprite
     this.coinSprite.src = '/coin.png';
@@ -969,31 +991,31 @@ export class GameEngine {
     }
   }
 
-  // Draw Character walk sprite sheet
+  // Draw Character
   private drawPlayer() {
     // Convert world Y to Screen Y
     const screenY = this.canvas.height - (this.player.y - this.cameraY);
 
     if (this.assetsLoaded) {
-      // 6 frames horizontally, 256x256 each frame
       const frameWidth = 256;
       const frameHeight = 256;
-      
-      let frameIndex = 0;
-      
-      // USER: "use the frame 1 for jumping and idle and the 6 frame animation for proper walking animations"
-      // Frame 1 is at index 0 of sprite sheet.
+
       const isAirborne = !this.player.onGround && Math.abs(this.player.vy) > 0.05;
       const isMoving = Math.abs(this.player.vx) > 0.2;
 
-      if (isAirborne || !isMoving) {
-        frameIndex = 0; // Frame 1 (Index 0)
-      } else {
-        frameIndex = this.player.walkFrame; // Animated 6 frames
-      }
+      let sprite: HTMLImageElement;
+      let sx: number;
 
-      const sx = frameIndex * frameWidth;
-      const sy = 0;
+      if (isAirborne) {
+        sprite = this.jumpSprite;
+        sx = 0;
+      } else if (!isMoving) {
+        sprite = this.idleSprite;
+        sx = 0;
+      } else {
+        sprite = this.walkSprite;
+        sx = this.player.walkFrame * frameWidth;
+      }
 
       this.ctx.save();
       // Mirror character if facing left
@@ -1001,14 +1023,14 @@ export class GameEngine {
         this.ctx.translate(this.player.x + this.player.width / 2, screenY + this.player.height / 2);
         this.ctx.scale(-1, 1);
         this.ctx.drawImage(
-          this.walkSprite,
-          sx, sy, frameWidth, frameHeight,
+          sprite,
+          sx, 0, frameWidth, frameHeight,
           -this.player.width / 2, -this.player.height / 2, this.player.width, this.player.height
         );
       } else {
         this.ctx.drawImage(
-          this.walkSprite,
-          sx, sy, frameWidth, frameHeight,
+          sprite,
+          sx, 0, frameWidth, frameHeight,
           this.player.x, screenY, this.player.width, this.player.height
         );
       }
