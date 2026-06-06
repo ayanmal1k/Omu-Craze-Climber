@@ -552,6 +552,7 @@ export class GameEngine {
     this.nextPlatformId = 1;
     this.shakeTime = 0;
     this.shakeAmount = 0;
+    this.lastFrameTs = 0;
 
     // Reset Player
     const groundHeight = Math.round(163 * (this.canvas.width / 937));

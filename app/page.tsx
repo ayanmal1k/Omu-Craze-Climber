@@ -139,9 +139,9 @@ export default function Home() {
       )}
 
       {/* Game canvas - always rendered in DOM, only styling changes */}
-      <div className={isFullscreen ? 'fixed inset-0 z-50 bg-[#1a0505] flex items-center justify-center' : 'w-full max-w-xl mx-auto px-4 pb-4'}>
-        <div className={isFullscreen ? 'h-full aspect-[3/4] relative' : 'w-full relative bg-[#0d0505] rounded-2xl p-2 shadow-[0_16px_32px_rgba(0,0,0,0.6)] border-2 border-[#3a1510] overflow-hidden'}>
-          <div className={`relative overflow-hidden bg-[#0a0a12] ${isFullscreen ? 'h-full rounded-none' : 'aspect-[3/4] rounded-xl'}`}>
+      <div className={isFullscreen ? 'fixed inset-0 z-50 bg-[#1a0505] flex items-center justify-center overflow-hidden' : 'w-full max-w-xl mx-auto px-4 pb-4'}>
+        <div className={isFullscreen ? 'relative' : 'w-full relative bg-[#0d0505] rounded-2xl p-2 shadow-[0_16px_32px_rgba(0,0,0,0.6)] border-2 border-[#3a1510] overflow-hidden'} style={isFullscreen ? { width: 'min(100%, calc(100vh * 3 / 4))', aspectRatio: '3/4' } : undefined}>
+          <div className={`relative overflow-hidden bg-[#0a0a12] ${isFullscreen ? 'w-full h-full rounded-none' : 'aspect-[3/4] rounded-xl'}`}>
             <canvas
               ref={canvasRef}
               width={480}
@@ -207,29 +207,29 @@ export default function Home() {
 
             {/* Mobile touch controls (bottom of canvas in fullscreen) */}
             {isFullscreen && isMobile && (
-              <div className="absolute bottom-0 left-0 right-0 z-30 flex items-end justify-between p-1 pb-2 sm:p-2 sm:pb-4 pointer-events-none">
-                <div className="flex gap-2 sm:gap-3 pointer-events-auto">
+              <div className="absolute bottom-0 left-0 right-0 z-30 flex items-end justify-between p-1 pb-1 sm:p-2 sm:pb-4 pointer-events-none" style={{touchAction:'manipulation'}}>
+                <div className="flex gap-1.5 sm:gap-3 pointer-events-auto">
                   <button
                     onTouchStart={(e) => { e.preventDefault(); engineRef.current?.setKeyState('left', true); }}
                     onTouchEnd={(e) => { e.preventDefault(); engineRef.current?.setKeyState('left', false); }}
-                    className="w-12 h-12 sm:w-16 sm:h-16 bg-black/40 border-2 border-white/20 rounded-xl text-white text-lg sm:text-2xl flex items-center justify-center active:bg-white/20 select-none"
+                    className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-black/40 border-2 border-white/20 rounded-xl text-white text-sm sm:text-lg md:text-2xl flex items-center justify-center active:bg-white/20 select-none"
                   >◀</button>
                   <button
                     onTouchStart={(e) => { e.preventDefault(); engineRef.current?.setKeyState('right', true); }}
                     onTouchEnd={(e) => { e.preventDefault(); engineRef.current?.setKeyState('right', false); }}
-                    className="w-12 h-12 sm:w-16 sm:h-16 bg-black/40 border-2 border-white/20 rounded-xl text-white text-lg sm:text-2xl flex items-center justify-center active:bg-white/20 select-none"
+                    className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-black/40 border-2 border-white/20 rounded-xl text-white text-sm sm:text-lg md:text-2xl flex items-center justify-center active:bg-white/20 select-none"
                   >▶</button>
                 </div>
-                <div className="flex gap-2 sm:gap-3 pointer-events-auto">
+                <div className="flex gap-1.5 sm:gap-3 pointer-events-auto">
                   <button
                     onTouchStart={(e) => { e.preventDefault(); engineRef.current?.setKeyState('jump', true); }}
                     onTouchEnd={(e) => { e.preventDefault(); engineRef.current?.setKeyState('jump', false); }}
-                    className="w-12 h-12 sm:w-16 sm:h-16 bg-black/40 border-2 border-white/20 rounded-xl text-white text-lg sm:text-2xl flex items-center justify-center active:bg-white/20 select-none"
+                    className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-black/40 border-2 border-white/20 rounded-xl text-white text-sm sm:text-lg md:text-2xl flex items-center justify-center active:bg-white/20 select-none"
                   >▲</button>
                   <button
                     onTouchStart={(e) => { e.preventDefault(); engineRef.current?.setKeyState('shift', true); engineRef.current?.setKeyState('jump', true); }}
                     onTouchEnd={(e) => { e.preventDefault(); engineRef.current?.setKeyState('shift', false); engineRef.current?.setKeyState('jump', false); }}
-                    className="w-12 h-12 sm:w-16 sm:h-16 bg-black/40 border-2 border-[#f4a259]/50 rounded-xl text-[#f4a259] text-sm sm:text-lg flex items-center justify-center active:bg-[#f4a259]/20 select-none font-bold"
+                    className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-black/40 border-2 border-[#f4a259]/50 rounded-xl text-[#f4a259] text-xs sm:text-sm md:text-lg flex items-center justify-center active:bg-[#f4a259]/20 select-none font-bold"
                   >▲▲</button>
                 </div>
               </div>
