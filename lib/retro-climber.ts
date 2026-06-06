@@ -336,6 +336,10 @@ export class GameEngine {
     this.callbacks = callbacks;
     this.audio = new SoundSystem();
 
+    // Pre-fill canvas with dark background so no white flash before assets load
+    this.ctx.fillStyle = '#0a0a12';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
     this.initInputs();
     this.loadAssets();
   }
@@ -661,8 +665,19 @@ export class GameEngine {
   }
 
   // Main game loop
-  private gameLoop = () => {
+  private lastFrameTs = 0;
+  private readonly FRAME_INTERVAL = 1000 / 60; // target 60fps
+  private gameLoop = (timestamp: number) => {
     if (this.state !== 'PLAYING') return;
+    if (this.lastFrameTs === 0) this.lastFrameTs = timestamp;
+
+    // Cap at 60fps so high-refresh screens (120Hz) run at same speed
+    const elapsed = timestamp - this.lastFrameTs;
+    if (elapsed < this.FRAME_INTERVAL - 1) {
+      this.animId = requestAnimationFrame(this.gameLoop);
+      return;
+    }
+    this.lastFrameTs = timestamp - (elapsed % this.FRAME_INTERVAL);
 
     this.update();
     this.render();
