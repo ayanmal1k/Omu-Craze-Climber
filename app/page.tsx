@@ -6,17 +6,13 @@ import {
   Pause, 
   Volume2, 
   VolumeX, 
-  Trophy, 
-  Coins, 
-  Gamepad2,
-  Sparkles
+  Trophy
 } from 'lucide-react';
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<GameEngine | null>(null);
   
-  // Game state mirroring
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'PAUSED' | 'GAME_OVER'>('START');
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
@@ -25,8 +21,7 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Load high score
-      const savedHighScore = localStorage.getItem('omu_climber_high_score');
+      const savedHighScore = localStorage.getItem('omu_crazy_climber_high_score');
       if (savedHighScore) {
         setHighScore(parseInt(savedHighScore, 10));
       }
@@ -36,16 +31,14 @@ export default function Home() {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // Instantiate game engine
     const engine = new GameEngine(canvasRef.current, {
       onScoreChange: (newScore) => setScore(newScore),
       onCoinChange: (newCoins) => setCoins(newCoins),
       onStateChange: (state) => setGameState(state),
       onGameOver: (finalScore) => {
-        // Save high score if beaten
-        const currentHigh = parseInt(localStorage.getItem('omu_climber_high_score') || '0', 10);
+        const currentHigh = parseInt(localStorage.getItem('omu_crazy_climber_high_score') || '0', 10);
         if (finalScore > currentHigh) {
-          localStorage.setItem('omu_climber_high_score', finalScore.toString());
+          localStorage.setItem('omu_crazy_climber_high_score', finalScore.toString());
           setHighScore(finalScore);
         }
       }
@@ -59,14 +52,12 @@ export default function Home() {
     };
   }, []);
 
-  // Update mute state in engine when React state changes
   useEffect(() => {
     if (engineRef.current) {
       engineRef.current.audio.setMute(isMuted);
     }
   }, [isMuted]);
 
-  // Button Action Handlers
   const handleStartRestart = () => {
     if (engineRef.current) {
       engineRef.current.startGame();
@@ -84,56 +75,31 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen w-full flex flex-col items-center p-4 sm:p-8 bg-gradient-to-br from-sky-300 via-sky-100 to-emerald-50 text-slate-800 antialiased font-sans">
-      
-      {/* Decorative fluffy clouds background effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),transparent)] pointer-events-none" />
+    <main className="min-h-screen w-full flex flex-col items-center p-4 sm:p-8 bg-gradient-to-b from-[#1a0505] via-[#2d0a0a] to-[#1a0505] text-[#e8d5c4] antialiased font-sans">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(120,30,30,0.3),transparent_60%)] pointer-events-none" />
 
-      {/* 2D Pixelation Happy Logo */}
-      <header className="mb-6 text-center select-none z-10 flex flex-col items-center gap-1.5">
-        <div className="flex items-center gap-2">
-          <Gamepad2 className="w-8 h-8 text-sky-500 animate-bounce" />
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-wider font-press-start text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-400 to-emerald-400 drop-shadow-[0_4px_6px_rgba(14,165,233,0.2)]">
-            OMU CLIMBER
-          </h1>
-        </div>
-        <p className="text-xs sm:text-sm font-bold text-sky-600/90 tracking-widest uppercase font-mono">
-          ☁ Climb to the Clouds ☁
+      <header className="mb-5 text-center select-none z-10 flex flex-col items-center gap-1">
+        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-wider font-press-start text-transparent bg-clip-text bg-gradient-to-r from-[#e85d3a] via-[#f4a259] to-[#e85d3a] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+          OMU CRAZY CLIMBER
+        </h1>
+        <p className="text-[9px] sm:text-xs font-bold text-[#a06050]/80 tracking-widest uppercase font-mono">
+          How high can you climb?
         </p>
       </header>
 
-      {/* Main Container */}
-      <div className="w-full max-w-xl flex flex-col items-center gap-5 z-10">
+      <div className="w-full max-w-xl flex flex-col items-center gap-4 z-10">
         
-        {/* Stats Dashboard Grid (Plump & Friendly Cards) */}
-        <section className="w-full grid grid-cols-3 gap-3">
-          {/* Score */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-3 shadow-md border border-white flex flex-col items-center text-center">
-            <span className="text-[9px] font-press-start text-sky-500 uppercase font-semibold">Score</span>
-            <span className="text-xl sm:text-2xl font-black font-mono text-slate-700 mt-1">{score}</span>
-          </div>
+        {/* Best Score */}
+        <div className="w-full text-center">
+          <span className="text-[9px] font-press-start text-[#705040] tracking-widest uppercase">
+            Best Score: <span className="text-[#f4a259]">{highScore}</span>
+          </span>
+        </div>
 
-          {/* Coins */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-3 shadow-md border border-white flex flex-col items-center text-center">
-            <span className="text-[9px] font-press-start text-amber-500 uppercase font-semibold flex items-center gap-1">
-              <Coins className="w-3 h-3 text-amber-500" /> Coins
-            </span>
-            <span className="text-xl sm:text-2xl font-black font-mono text-amber-500 mt-1">{coins}</span>
-          </div>
-
-          {/* High Score */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-3 shadow-md border border-white flex flex-col items-center text-center relative overflow-hidden">
-            <span className="text-[9px] font-press-start text-indigo-500 uppercase font-semibold flex items-center gap-1 justify-center">
-              <Trophy className="w-3 h-3 text-indigo-500 fill-indigo-500/10" /> Best
-            </span>
-            <span className="text-xl sm:text-2xl font-black font-mono text-indigo-600 mt-1">{highScore}</span>
-          </div>
-        </section>
-
-        {/* Clean, Framed Game Screen */}
+        {/* Game Screen */}
         <section className="w-full relative flex flex-col items-center">
-          <div className="w-full relative bg-sky-950 rounded-3xl p-3 shadow-[0_20px_40px_rgba(14,165,233,0.18)] border-8 border-white bg-clip-border overflow-hidden">
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#0284c7]">
+          <div className="w-full relative bg-[#0d0505] rounded-2xl p-2 shadow-[0_16px_32px_rgba(0,0,0,0.6)] border-2 border-[#3a1510] overflow-hidden">
+            <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#0a0a12]">
               <canvas
                 ref={canvasRef}
                 width={480}
@@ -141,52 +107,47 @@ export default function Home() {
                 className="w-full h-full pixelated select-none pointer-events-none"
               />
 
-              {/* OVERLAYS based on game states */}
-              
-              {/* 1. START OVERLAY */}
+              {/* START OVERLAY */}
               {gameState === 'START' && (
-                <div className="absolute inset-0 bg-sky-950/80 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center text-white">
-                  <div className="w-16 h-16 mb-4 rounded-full bg-white/10 flex items-center justify-center animate-bounce">
-                    <Sparkles className="w-8 h-8 text-amber-300" />
-                  </div>
-                  <h2 className="text-xl font-extrabold font-press-start text-cyan-300 mb-2">READY TO JUMP?</h2>
-                  <p className="text-[10px] font-mono text-slate-300 mb-6 uppercase max-w-xs leading-relaxed">
-                    Use A/D or arrows to guide the climber. Collect coins on platforms.
+                <div className="absolute inset-0 bg-[#0a0202]/85 flex flex-col items-center justify-center p-6 text-center text-white">
+                  <h2 className="text-lg font-extrabold font-press-start text-[#f4a259] mb-2">READY TO CLIMB?</h2>
+                  <p className="text-[9px] font-mono text-[#a08070] mb-5 uppercase max-w-xs leading-relaxed">
+                    Use A/D or arrows to move. Collect coins and climb higher!
                   </p>
-                  <p className="text-[8px] font-mono text-slate-400 mb-4">Press any key to start</p>
+                  <p className="text-[7px] font-mono text-[#705040] mb-3">Press any key to start</p>
                   <button 
                     onClick={handleStartRestart}
-                    className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-white font-bold font-press-start text-xs rounded-2xl border-4 border-white shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
+                    className="px-5 py-2.5 bg-gradient-to-r from-[#e85d3a] to-[#c04020] hover:from-[#f06d4a] hover:to-[#d05030] text-white font-bold font-press-start text-[10px] rounded-xl border-2 border-[#e85d3a]/50 shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
                   >
                     PLAY NOW
                   </button>
                 </div>
               )}
 
-              {/* 2. PAUSED OVERLAY */}
+              {/* PAUSED OVERLAY */}
               {gameState === 'PAUSED' && (
-                <div className="absolute inset-0 bg-sky-950/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center text-white">
-                  <h2 className="text-xl font-extrabold font-press-start text-amber-400 mb-2 animate-pulse">GAME PAUSED</h2>
-                  <p className="text-[10px] font-mono text-slate-300 mb-6">READY TO RESUME CLIMBING?</p>
+                <div className="absolute inset-0 bg-[#0a0202]/85 flex flex-col items-center justify-center p-6 text-center text-white">
+                  <h2 className="text-lg font-extrabold font-press-start text-[#f4a259] mb-2 animate-pulse">PAUSED</h2>
+                  <p className="text-[9px] font-mono text-[#a08070] mb-5">TAKE A BREATH</p>
                   <button 
                     onClick={handlePauseResume}
-                    className="px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-white font-bold font-press-start text-xs rounded-2xl border-4 border-white shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
+                    className="px-5 py-2.5 bg-gradient-to-r from-[#f4a259] to-[#d08030] hover:from-[#f5b269] hover:to-[#e09040] text-white font-bold font-press-start text-[10px] rounded-xl border-2 border-[#f4a259]/50 shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
                   >
                     RESUME
                   </button>
                 </div>
               )}
 
-              {/* 3. GAME OVER OVERLAY */}
+              {/* GAME OVER OVERLAY */}
               {gameState === 'GAME_OVER' && (
-                <div className="absolute inset-0 bg-rose-950/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center text-white animate-fade-in">
-                  <h2 className="text-2xl font-extrabold font-press-start text-rose-400 mb-2 drop-shadow-md">OH NO!</h2>
-                  <p className="text-[10px] font-press-start text-slate-300 mt-2 mb-1">SCORE: {score}</p>
-                  <p className="text-[10px] font-press-start text-yellow-400 mb-6">COINS: {coins}</p>
-                  <p className="text-[8px] font-mono text-slate-400 mb-4">Press W / ▲ / Space to retry</p>
+                <div className="absolute inset-0 bg-[#0a0202]/90 flex flex-col items-center justify-center p-6 text-center text-white">
+                  <h2 className="text-xl font-extrabold font-press-start text-[#d04030] mb-2 drop-shadow-md">FELL!</h2>
+                  <p className="text-[9px] font-press-start text-[#a08070] mt-1 mb-1">SCORE: {score}</p>
+                  <p className="text-[9px] font-press-start text-[#f4a259] mb-5">COINS: {coins}</p>
+                  <p className="text-[7px] font-mono text-[#705040] mb-3">Press W / ▲ / Space to retry</p>
                   <button 
                     onClick={handleStartRestart}
-                    className="px-6 py-3 bg-gradient-to-r from-rose-450 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white font-bold font-press-start text-xs rounded-2xl border-4 border-white shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
+                    className="px-5 py-2.5 bg-gradient-to-r from-[#d04030] to-[#a03020] hover:from-[#e05040] hover:to-[#b04030] text-white font-bold font-press-start text-[10px] rounded-xl border-2 border-[#d04030]/50 shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
                   >
                     TRY AGAIN
                   </button>
@@ -195,20 +156,20 @@ export default function Home() {
 
               {/* Floating buttons: mute + pause */}
               {gameState === 'PLAYING' && (
-                <div className="absolute top-4 right-4 flex gap-2 z-20">
+                <div className="absolute top-3 right-3 flex gap-1.5 z-20">
                   <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white cursor-pointer backdrop-blur-xs transition-all"
+                    className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 border border-white/15 text-white/80 cursor-pointer transition-all"
                     aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
                   >
-                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                   </button>
                   <button
                     onClick={handlePauseResume}
-                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white cursor-pointer backdrop-blur-xs transition-all"
+                    className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 border border-white/15 text-white/80 cursor-pointer transition-all"
                     aria-label="Pause Game"
                   >
-                    <Pause className="w-4 h-4 fill-white" />
+                    <Pause className="w-3.5 h-3.5 fill-white/80" />
                   </button>
                 </div>
               )}
@@ -216,61 +177,118 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Clean Controls & Information Panels below canvas */}
-        <section className="w-full bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-md border border-white flex flex-col gap-3 font-mono text-slate-600 text-xs sm:text-sm">
-          
-          <div className="flex flex-col gap-1.5">
-            <h3 className="text-xs font-bold font-press-start text-sky-600 uppercase flex items-center gap-1.5 border-b border-sky-100 pb-1.5">
-              🎮 How to Play
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-3 mt-1.5">
-              <div className="flex items-center justify-between bg-sky-50/50 p-2 rounded-xl border border-sky-100/50">
-                <span>Move Left</span>
-                <div className="flex gap-0.5">
-                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">A</kbd>
-                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">◀</kbd>
-                </div>
+        {/* Controls */}
+        <section className="w-full bg-[#120606]/90 backdrop-blur-md rounded-xl p-3 shadow-md border border-[#3a1510] flex flex-col gap-2.5 font-mono text-[#c0a090] text-xs">
+          <h3 className="text-[10px] font-bold font-press-start text-[#f4a259] uppercase tracking-wider text-center border-b border-[#3a1510] pb-2">
+            Controls
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center justify-between bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50 col-span-2">
+              <span className="text-[10px]">Move</span>
+              <div className="flex gap-0.5">
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[9px]">A</kbd>
+                <span className="text-[7px] text-[#605040] self-center">/</span>
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[9px]">D</kbd>
+                <span className="text-[7px] text-[#605040] self-center mx-0.5">or</span>
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[9px]">◀</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[9px]">▶</kbd>
               </div>
-
-              <div className="flex items-center justify-between bg-sky-50/50 p-2 rounded-xl border border-sky-100/50">
-                <span>Move Right</span>
-                <div className="flex gap-0.5">
-                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">D</kbd>
-                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">▶</kbd>
-                </div>
+            </div>
+            <div className="flex items-center justify-between bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50">
+              <span className="text-[10px]">Jump</span>
+              <div className="flex gap-0.5">
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[9px]">W</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[9px]">▲</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[7px]">SPACE</kbd>
               </div>
-
-              <div className="flex items-center justify-between bg-sky-50/50 p-2 rounded-xl border border-sky-100/50">
-                <span>Jump</span>
-                <div className="flex gap-0.5">
-                  <kbd className="px-2 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[9px]">SPACEBAR</kbd>
-                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">W</kbd>
-                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">▲</kbd>
-                </div>
+            </div>
+            <div className="flex items-center justify-between bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50">
+              <span className="text-[10px]">Power Jump <span className="text-[#ffd700]">(costs 20 coins)</span></span>
+              <div className="flex gap-0.5">
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#f4a259] font-sans font-bold text-[9px]">SHIFT</kbd>
+                <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#f4a259] font-sans font-bold text-[9px]">▲</kbd>
               </div>
+            </div>
+            <div className="flex items-center justify-between bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50 col-span-2">
+              <span className="text-[10px]">Start / Retry</span>
+              <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#c0a090] font-sans font-bold text-[9px]">ANY KEY</kbd>
+            </div>
+          </div>
+        </section>
 
-              <div className="col-span-2 flex items-center justify-between bg-emerald-50/50 p-2 rounded-xl border border-emerald-100/50">
-                <span>Start / Retry</span>
-                <div className="flex gap-0.5">
-                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[9px]">ANY KEY</kbd>
-                </div>
+        {/* Mechanics & Platforms Guide */}
+        <section className="w-full bg-[#120606]/90 backdrop-blur-md rounded-xl p-3 shadow-md border border-[#3a1510] flex flex-col gap-2.5 font-mono text-[#c0a090] text-xs">
+          <h3 className="text-[10px] font-bold font-press-start text-[#f4a259] uppercase tracking-wider text-center border-b border-[#3a1510] pb-2">
+            Platforms & Collectibles
+          </h3>
+          <div className="flex flex-row flex-wrap gap-2">
+            <div className="flex items-center gap-2 bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50 flex-1 min-w-[160px]">
+              <svg width="20" height="20" viewBox="0 0 24 24" className="shrink-0" style={{imageRendering:'pixelated'}}>
+                <rect x="0" y="8" width="24" height="16" fill="#5d4037"/>
+                <rect x="0" y="8" width="24" height="4" fill="#4caf50"/>
+                <rect x="2" y="8" width="6" height="5" fill="#2e7d32"/>
+                <rect x="16" y="8" width="6" height="5" fill="#2e7d32"/>
+                <rect x="0" y="22" width="24" height="2" fill="#3e2723"/>
+              </svg>
+              <div className="min-w-0">
+                <span className="text-[#4caf50] font-bold text-[9px]">Standard</span>
+                <p className="text-[7px] text-[#807060] leading-tight">Mossy grass-topped dirt blocks. Safe to jump on.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50 flex-1 min-w-[160px]">
+              <svg width="20" height="20" viewBox="0 0 24 24" className="shrink-0" style={{imageRendering:'pixelated'}}>
+                <rect x="0" y="8" width="24" height="16" fill="#4b6584"/>
+                <rect x="0" y="8" width="24" height="3" fill="#90caf9"/>
+                <rect x="0" y="22" width="24" height="2" fill="#2f3542"/>
+                <rect x="0" y="8" width="2" height="16" fill="#2f3542"/>
+                <rect x="22" y="8" width="2" height="16" fill="#2f3542"/>
+                <rect x="5" y="13" width="2" height="2" fill="#dcdde1"/>
+                <rect x="17" y="13" width="2" height="2" fill="#dcdde1"/>
+              </svg>
+              <div className="min-w-0">
+                <span className="text-[#90caf9] font-bold text-[9px]">Moving</span>
+                <p className="text-[7px] text-[#807060] leading-tight">Sliding steel platforms that bounce off edges.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50 flex-1 min-w-[160px]">
+              <svg width="20" height="20" viewBox="0 0 24 24" className="shrink-0" style={{imageRendering:'pixelated'}}>
+                <rect x="0" y="8" width="24" height="16" fill="#d2b48c"/>
+                <rect x="0" y="22" width="24" height="2" fill="#8d6e63"/>
+                <rect x="6" y="8" width="2" height="5" fill="#4e342e"/>
+                <rect x="6" y="13" width="5" height="2" fill="#4e342e"/>
+                <rect x="11" y="13" width="2" height="5" fill="#4e342e"/>
+                <rect x="17" y="8" width="2" height="4" fill="#4e342e"/>
+                <rect x="15" y="12" width="4" height="2" fill="#4e342e"/>
+              </svg>
+              <div className="min-w-0">
+                <span className="text-[#d2b48c] font-bold text-[9px]">Crumbling</span>
+                <p className="text-[7px] text-[#807060] leading-tight">Cracked sandstone. Breaks after you land!</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50 flex-1 min-w-[160px]">
+              <svg width="20" height="20" viewBox="0 0 24 24" className="shrink-0" style={{imageRendering:'pixelated'}}>
+                <rect x="0" y="14" width="24" height="10" fill="#8d6e63"/>
+                <rect x="0" y="22" width="24" height="2" fill="#5d4037"/>
+                <rect x="9" y="4" width="6" height="3" fill="#b2bec3"/>
+                <rect x="6" y="7" width="12" height="3" fill="#b2bec3"/>
+                <rect x="8" y="10" width="8" height="3" fill="#b2bec3"/>
+                <rect x="10" y="2" width="4" height="2" fill="#e67e22"/>
+              </svg>
+              <div className="min-w-0">
+                <span className="text-[#b2bec3] font-bold text-[9px]">Spring</span>
+                <p className="text-[7px] text-[#807060] leading-tight">Coiled launcher. Bounces you sky-high!</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#f4a259]/20 flex-1 min-w-[160px]">
+              <div className="w-5 h-5 shrink-0 rounded-full" style={{backgroundImage:'url(/coin.png)',backgroundSize:'600% 100%',backgroundPosition:'0% 0%',imageRendering:'pixelated'}} />
+              <div className="min-w-0">
+                <span className="text-[#ffd700] font-bold text-[9px]">Gold Coin</span>
+                <p className="text-[7px] text-[#807060] leading-tight">+50 pts. Spend 5 for Shift mega jump!</p>
               </div>
             </div>
           </div>
-
-          <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-bold font-press-start text-emerald-600 uppercase flex items-center gap-1.5">
-              ☘ Tips & Tricks
-            </h3>
-            <ul className="list-disc pl-4 text-xs flex flex-col gap-1.5 text-slate-500 leading-relaxed mt-1">
-              <li>Loot <strong className="text-amber-500 font-bold">Spinning Gold Coins</strong> for a sweet <strong className="text-emerald-600">+50 points</strong> boost!</li>
-              <li>Bounce on <strong className="text-cyan-500 font-bold">Spring Coils</strong> to shoot up into the stratosphere.</li>
-              <li>Watch out for cracked <strong className="text-rose-400 font-bold">Crumbling Blocks</strong>; they break under your weight!</li>
-              <li>Wrap around screen edges (going off-screen wraps you to the opposite side!).</li>
-            </ul>
-          </div>
         </section>
+
       </div>
     </main>
   );
