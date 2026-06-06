@@ -511,7 +511,7 @@ export class GameEngine {
       if (!this.audio.getMuted()) {
         this.audio.startMusic();
       }
-      this.gameLoop();
+      this.animId = requestAnimationFrame(this.gameLoop);
     }
   }
 
@@ -531,7 +531,9 @@ export class GameEngine {
       if (!this.audio.getMuted()) {
         this.audio.startMusic();
       }
-      this.gameLoop();
+      this.lastFrameTs = 0;
+      this.accumulator = 0;
+      this.animId = requestAnimationFrame(this.gameLoop);
     }
   }
 
