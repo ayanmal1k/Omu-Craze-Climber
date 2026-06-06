@@ -586,11 +586,13 @@ export class GameEngine {
 
       if (currentY > 1500) {
         // High altitude: introduces moving, spring and crumbling platforms
+        // Crumbling chance increases with altitude
+        const crumblingChance = Math.min(40, 15 + (currentY - 1500) / 60);
         if (rand < 25) {
           type = 'MOVING';
-        } else if (rand < 40) {
+        } else if (rand < 25 + crumblingChance) {
           type = 'CRUMBLING';
-        } else if (rand < 48) {
+        } else if (rand < 33 + crumblingChance) {
           type = 'SPRING';
         }
       } else if (currentY > 600) {
@@ -764,8 +766,9 @@ export class GameEngine {
             platform.crumbleTimer = 30; // 500ms crumbling delay
             this.audio.playCrumble();
           } else if (platform.type === 'MOVING') {
-            // Stand on moving platform: transfer its speed
+            // Stand on moving platform: transfer its speed, but stay in bounds
             this.player.x += platform.vx;
+            this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
           }
         }
       }
