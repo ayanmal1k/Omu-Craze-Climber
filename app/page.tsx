@@ -107,6 +107,9 @@ export default function Home() {
       if (gameState === 'PLAYING') {
         engineRef.current.pauseGame();
       } else if (gameState === 'PAUSED') {
+        if (isMobile && !isFullscreen) {
+          setIsFullscreen(true);
+        }
         engineRef.current.resumeGame();
       }
     }
@@ -230,10 +233,10 @@ export default function Home() {
                     className="w-16 h-16 sm:w-20 sm:h-20 bg-black/40 border-2 border-white/20 rounded-2xl text-white text-2xl sm:text-3xl flex items-center justify-center active:bg-white/20 select-none touch-none"
                   >▲</button>
                   <button
-                    onPointerDown={(e) => { e.preventDefault(); engineRef.current?.setKeyState('shift', true); engineRef.current?.setKeyState('jump', true); }}
+                    onPointerDown={(e) => { e.preventDefault(); if (coins >= 20) { engineRef.current?.setKeyState('shift', true); engineRef.current?.setKeyState('jump', true); } }}
                     onPointerUp={(e) => { e.preventDefault(); engineRef.current?.setKeyState('shift', false); engineRef.current?.setKeyState('jump', false); }}
                     onPointerLeave={(e) => { e.preventDefault(); engineRef.current?.setKeyState('shift', false); engineRef.current?.setKeyState('jump', false); }}
-                    className="w-16 h-16 sm:w-20 sm:h-20 bg-black/40 border-2 border-[#f4a259]/50 rounded-2xl text-[#f4a259] text-xl sm:text-2xl flex items-center justify-center active:bg-[#f4a259]/20 select-none touch-none font-bold"
+                    className={`w-16 h-16 sm:w-20 sm:h-20 border-2 rounded-2xl text-xl sm:text-2xl flex items-center justify-center select-none touch-none font-bold ${coins >= 20 ? 'bg-black/40 border-[#f4a259]/50 text-[#f4a259] active:bg-[#f4a259]/20 cursor-pointer' : 'bg-black/20 border-gray-700 text-gray-600 cursor-not-allowed'}`}
                   >▲▲</button>
                 </div>
               </div>
@@ -272,7 +275,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between bg-[#0a0202]/50 p-1.5 rounded-lg border border-[#2a0f0a]/50">
-                  <span className="text-[10px]">Power Jump <span className="text-[#ffd700]">(costs 5 coins)</span></span>
+                  <span className="text-[10px]">Power Jump <span className="text-[#ffd700]">(costs 20 coins)</span></span>
                   <div className="flex gap-0.5">
                     <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#f4a259] font-sans font-bold text-[9px]">SHIFT</kbd>
                     <kbd className="px-1.5 py-0.5 bg-[#1a0808] border border-[#3a1510] rounded text-[#f4a259] font-sans font-bold text-[9px]">▲</kbd>
@@ -352,7 +355,7 @@ export default function Home() {
                   <div className="w-5 h-5 shrink-0 rounded-full" style={{backgroundImage:'url(/coin.png)',backgroundSize:'600% 100%',backgroundPosition:'0% 0%',imageRendering:'pixelated'}} />
                   <div className="min-w-0">
                     <span className="text-[#ffd700] font-bold text-[9px]">Gold Coin</span>
-                    <p className="text-[7px] text-[#807060] leading-tight">+50 pts. Spend 5 for Shift mega jump!</p>
+                    <p className="text-[7px] text-[#807060] leading-tight">+50 pts. Spend 20 for Shift mega jump!</p>
                   </div>
                 </div>
               </div>
