@@ -3,17 +3,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GameEngine } from '@/lib/retro-climber';
 import { 
-  Play, 
   Pause, 
   Volume2, 
   VolumeX, 
-  RotateCcw, 
   Trophy, 
   Coins, 
-  Gamepad2, 
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
+  Gamepad2,
   Sparkles
 } from 'lucide-react';
 
@@ -88,19 +83,6 @@ export default function Home() {
     }
   };
 
-  // Virtual Gamepad Handlers (Touch & Click)
-  const handleTouchStart = (key: 'left' | 'right' | 'jump') => {
-    if (engineRef.current) {
-      engineRef.current.setKeyState(key, true);
-    }
-  };
-
-  const handleTouchEnd = (key: 'left' | 'right' | 'jump') => {
-    if (engineRef.current) {
-      engineRef.current.setKeyState(key, false);
-    }
-  };
-
   return (
     <main className="min-h-screen w-full flex flex-col items-center p-4 sm:p-8 bg-gradient-to-br from-sky-300 via-sky-100 to-emerald-50 text-slate-800 antialiased font-sans">
       
@@ -171,6 +153,7 @@ export default function Home() {
                   <p className="text-[10px] font-mono text-slate-300 mb-6 uppercase max-w-xs leading-relaxed">
                     Use A/D or arrows to guide the climber. Collect coins on platforms.
                   </p>
+                  <p className="text-[8px] font-mono text-slate-400 mb-4">Press any key to start</p>
                   <button 
                     onClick={handleStartRestart}
                     className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-white font-bold font-press-start text-xs rounded-2xl border-4 border-white shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
@@ -200,6 +183,7 @@ export default function Home() {
                   <h2 className="text-2xl font-extrabold font-press-start text-rose-400 mb-2 drop-shadow-md">OH NO!</h2>
                   <p className="text-[10px] font-press-start text-slate-300 mt-2 mb-1">SCORE: {score}</p>
                   <p className="text-[10px] font-press-start text-yellow-400 mb-6">COINS: {coins}</p>
+                  <p className="text-[8px] font-mono text-slate-400 mb-4">Press W / ▲ / Space to retry</p>
                   <button 
                     onClick={handleStartRestart}
                     className="px-6 py-3 bg-gradient-to-r from-rose-450 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white font-bold font-press-start text-xs rounded-2xl border-4 border-white shadow-lg cursor-pointer transform hover:scale-105 active:scale-95 transition-all"
@@ -209,71 +193,26 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Floating pause button */}
+              {/* Floating buttons: mute + pause */}
               {gameState === 'PLAYING' && (
-                <button
-                  onClick={handlePauseResume}
-                  className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white cursor-pointer z-20 backdrop-blur-xs transition-all"
-                  aria-label="Pause Game"
-                >
-                  <Pause className="w-4 h-4 fill-white" />
-                </button>
+                <div className="absolute top-4 right-4 flex gap-2 z-20">
+                  <button
+                    onClick={() => setIsMuted(!isMuted)}
+                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white cursor-pointer backdrop-blur-xs transition-all"
+                    aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
+                  >
+                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={handlePauseResume}
+                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white cursor-pointer backdrop-blur-xs transition-all"
+                    aria-label="Pause Game"
+                  >
+                    <Pause className="w-4 h-4 fill-white" />
+                  </button>
+                </div>
               )}
             </div>
-          </div>
-        </section>
-
-        {/* Happy Bubble Control Buttons (Always Available below Canvas) */}
-        <section className="w-full bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-md border border-white flex justify-between items-center gap-3">
-          
-          {/* Audio toggle button */}
-          <button 
-            onClick={() => setIsMuted(!isMuted)} 
-            className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-center ${
-              isMuted 
-                ? 'bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100 shadow-[0_4px_0_rgba(244,63,94,0.1)]' 
-                : 'bg-emerald-50 border-emerald-250 text-emerald-600 hover:bg-emerald-100 shadow-[0_4px_0_rgba(16,185,129,0.1)]'
-            }`}
-            aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
-          >
-            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-          </button>
-
-          {/* Touch Gamepad Bubble Buttons */}
-          <div className="flex items-center gap-3">
-            <button
-              onMouseDown={() => handleTouchStart('left')}
-              onMouseUp={() => handleTouchEnd('left')}
-              onTouchStart={() => handleTouchStart('left')}
-              onTouchEnd={() => handleTouchEnd('left')}
-              className="w-14 h-14 bg-sky-100 active:bg-sky-200 border-2 border-sky-300 rounded-full flex items-center justify-center cursor-pointer shadow-[0_4px_0_#bae6fd] select-none touch-none text-sky-600 active:translate-y-0.5 active:shadow-[0_2px_0_#bae6fd] transition-all"
-              aria-label="Move Left"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-
-            {/* Jump button */}
-            <button
-              onMouseDown={() => handleTouchStart('jump')}
-              onMouseUp={() => handleTouchEnd('jump')}
-              onTouchStart={() => handleTouchStart('jump')}
-              onTouchEnd={() => handleTouchEnd('jump')}
-              className="w-20 h-14 bg-gradient-to-r from-pink-400 to-rose-450 hover:from-pink-300 hover:to-rose-400 border-2 border-pink-200 rounded-full flex items-center justify-center cursor-pointer shadow-[0_4px_0_#f472b6] select-none touch-none text-white font-bold active:translate-y-0.5 active:shadow-[0_2px_0_#f472b6] transition-all"
-              aria-label="Jump"
-            >
-              <ArrowUp className="w-6 h-6 animate-bounce" />
-            </button>
-
-            <button
-              onMouseDown={() => handleTouchStart('right')}
-              onMouseUp={() => handleTouchEnd('right')}
-              onTouchStart={() => handleTouchStart('right')}
-              onTouchEnd={() => handleTouchEnd('right')}
-              className="w-14 h-14 bg-sky-100 active:bg-sky-200 border-2 border-sky-300 rounded-full flex items-center justify-center cursor-pointer shadow-[0_4px_0_#bae6fd] select-none touch-none text-sky-600 active:translate-y-0.5 active:shadow-[0_2px_0_#bae6fd] transition-all"
-              aria-label="Move Right"
-            >
-              <ArrowRight className="w-6 h-6" />
-            </button>
           </div>
         </section>
 
@@ -302,12 +241,19 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="col-span-2 flex items-center justify-between bg-pink-50/50 p-2 rounded-xl border border-pink-100/50">
-                <span>Jump / Launch</span>
-                <div className="flex gap-1">
+              <div className="flex items-center justify-between bg-sky-50/50 p-2 rounded-xl border border-sky-100/50">
+                <span>Jump</span>
+                <div className="flex gap-0.5">
                   <kbd className="px-2 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[9px]">SPACEBAR</kbd>
                   <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">W</kbd>
                   <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[10px]">▲</kbd>
+                </div>
+              </div>
+
+              <div className="col-span-2 flex items-center justify-between bg-emerald-50/50 p-2 rounded-xl border border-emerald-100/50">
+                <span>Start / Retry</span>
+                <div className="flex gap-0.5">
+                  <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-xs text-slate-500 font-sans font-bold text-[9px]">ANY KEY</kbd>
                 </div>
               </div>
             </div>

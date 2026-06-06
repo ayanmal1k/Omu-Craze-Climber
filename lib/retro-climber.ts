@@ -312,6 +312,7 @@ export class GameEngine {
   private readonly acceleration = 0.45;
   private readonly maxSpeedX = 3.8;
   private readonly jumpStrength = -10.0;
+  private readonly powerJumpStrength = -16.0;
   private readonly springStrength = -16.5;
 
   // Game Objects
@@ -320,7 +321,7 @@ export class GameEngine {
   private particles: Particle[] = [];
 
   // Inputs
-  private keys = { left: false, right: false, jump: false };
+  private keys = { left: false, right: false, jump: false, shift: false };
 
   // Screen shake
   private shakeTime = 0;
@@ -452,14 +453,30 @@ export class GameEngine {
         e.preventDefault(); // Stop page scrolling
       }
 
+      // Start game on any key press
+      if (this.state === 'START') {
+        this.startGame();
+        return;
+      }
+
+      // Retry game on Space, Up, or W after game over
+      if (this.state === 'GAME_OVER') {
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+          this.startGame();
+        }
+        return;
+      }
+
       if (this.state !== 'PLAYING') return;
 
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.keys.shift = true;
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = true;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = true;
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') this.keys.jump = true;
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.keys.shift = false;
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') this.keys.jump = false;
@@ -523,7 +540,6 @@ export class GameEngine {
     this.score = 0;
     this.coinsCount = 0;
     this.cameraY = 0;
-    this.maxWorldY = 0;
     this.nextPlatformId = 1;
     this.shakeTime = 0;
     this.shakeAmount = 0;
@@ -532,6 +548,7 @@ export class GameEngine {
     const groundHeight = Math.round(163 * (this.canvas.width / 937));
     this.player.x = this.canvas.width / 2 - this.player.width / 2;
     this.player.y = groundHeight + this.player.height; // Stand on bottom ground dynamically
+    this.maxWorldY = this.player.y;
     this.player.vx = 0;
     this.player.vy = 0;
     this.player.facingRight = true;
@@ -540,7 +557,7 @@ export class GameEngine {
     this.player.walkFrameTime = 0;
     this.player.jumpDustSpawned = false;
 
-    this.keys = { left: false, right: false, jump: false };
+    this.keys = { left: false, right: false, jump: false, shift: false };
     this.platforms = [];
     this.coins = [];
     this.particles = [];
@@ -685,10 +702,18 @@ export class GameEngine {
 
     // 4. Jump trigger
     if (this.keys.jump && this.player.onGround) {
-      this.player.vy = this.jumpStrength;
+      if (this.keys.shift && this.coinsCount >= 20) {
+        this.player.vy = this.powerJumpStrength;
+        this.coinsCount -= 20;
+        this.callbacks.onCoinChange(this.coinsCount);
+        this.audio.playSpring();
+        this.spawnJumpDust(this.player.x + this.player.width / 2, this.player.y);
+      } else {
+        this.player.vy = this.jumpStrength;
+        this.audio.playJump();
+        this.spawnJumpDust(this.player.x + this.player.width / 2, this.player.y);
+      }
       this.player.onGround = false;
-      this.audio.playJump();
-      this.spawnJumpDust(this.player.x + this.player.width / 2, this.player.y);
     }
 
     // 5. Platforms update & collisions
@@ -1220,21 +1245,28 @@ export class GameEngine {
     });
   }
 
-  // Draw overlay score directly in canvas
+  // Draw overlay score and coin count directly in canvas
   private drawScoreOverlay() {
-    const text = `${this.score}`;
     this.ctx.save();
-    
-    // Pixel art drop shadow for readability
+
+    // Score - top center
     this.ctx.font = '28px "Press Start 2P", monospace';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'top';
-    
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-    this.ctx.fillText(text, this.canvas.width / 2 + 3, 18);
 
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    this.ctx.fillText(`${this.score}`, this.canvas.width / 2 + 3, 18);
     this.ctx.fillStyle = '#ffffff';
-    this.ctx.fillText(text, this.canvas.width / 2, 15);
+    this.ctx.fillText(`${this.score}`, this.canvas.width / 2, 15);
+
+    // Coins - top left
+    this.ctx.font = '16px "Press Start 2P", monospace';
+    this.ctx.textAlign = 'left';
+
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    this.ctx.fillText(`x${this.coinsCount}`, 15, 24);
+    this.ctx.fillStyle = '#ffd700';
+    this.ctx.fillText(`x${this.coinsCount}`, 12, 21);
 
     this.ctx.restore();
   }
