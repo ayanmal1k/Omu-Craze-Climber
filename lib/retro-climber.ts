@@ -275,6 +275,7 @@ export class GameEngine {
   private coinSprite = new Image();
   private groundBg = new Image();
   private skyBg = new Image();
+  private sky2Bg = new Image();
   private assetsLoaded = false;
 
   // Sound System
@@ -343,7 +344,7 @@ export class GameEngine {
     let loaded = 0;
     const onAssetLoad = () => {
       loaded++;
-      if (loaded === 6) {
+      if (loaded === 7) {
         this.assetsLoaded = true;
         this.resetGame();
         this.drawStartScreen();
@@ -412,6 +413,7 @@ export class GameEngine {
         if (name === 'coin') this.coinSprite = img;
         if (name === 'ground') this.groundBg = img;
         if (name === 'sky') this.skyBg = img;
+        if (name === 'sky2') this.sky2Bg = img;
         onAssetLoad();
       };
     };
@@ -445,6 +447,11 @@ export class GameEngine {
     this.skyBg.src = '/sky.png';
     this.skyBg.onload = onAssetLoad;
     this.skyBg.onerror = () => handleLoadError('sky', '#0284c7', '/sky.png');
+
+    // Load Sky2 Background (used for index >= 2)
+    this.sky2Bg.src = '/sky2.png';
+    this.sky2Bg.onload = onAssetLoad;
+    this.sky2Bg.onerror = () => handleLoadError('sky2', '#1e3a5f', '/sky2.png');
   }
 
   private initInputs() {
@@ -459,11 +466,9 @@ export class GameEngine {
         return;
       }
 
-      // Retry game on Space, Up, or W after game over
+      // Retry game on any key press after game over
       if (this.state === 'GAME_OVER') {
-        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
-          this.startGame();
-        }
+        this.startGame();
         return;
       }
 
@@ -487,7 +492,7 @@ export class GameEngine {
   }
 
   // Set keyboard inputs from external buttons/touch pads
-  public setKeyState(key: 'left' | 'right' | 'jump', pressed: boolean) {
+  public setKeyState(key: 'left' | 'right' | 'jump' | 'shift', pressed: boolean) {
     if (this.state === 'PLAYING') {
       this.keys[key] = pressed;
     }
@@ -993,29 +998,30 @@ export class GameEngine {
   private drawEndlessBackground() {
     // 937x1678 original aspect ratio
     const bgScale = this.canvas.width / 937;
-    const bgScaledHeight = 1678 * bgScale;
+    const bgScaledHeight = Math.round(1678 * bgScale);
 
     // Calculate background y positions
     // World coordinates (cameraY is scrolling up). Bottom of screen is at cameraY.
     // Screen coordinates mapping: screenY = canvas.height - (worldY - cameraY)
     
     // 1. Draw ground background at the bottom: world Y: [0, bgScaledHeight]
-    const groundScreenY = this.canvas.height - (bgScaledHeight - this.cameraY);
+    //    Ground starts 1px higher and is 1px taller to overlap the first sky by 1px.
+    let groundScreenY = Math.round(this.canvas.height - (bgScaledHeight - this.cameraY));
     if (groundScreenY < this.canvas.height && groundScreenY + bgScaledHeight > 0) {
-      this.ctx.drawImage(this.groundBg, 0, groundScreenY, this.canvas.width, bgScaledHeight);
+      this.ctx.drawImage(this.groundBg, 0, groundScreenY - 1, this.canvas.width, bgScaledHeight + 1);
     }
 
-    // 2. Draw sky backgrounds repeating endlessly above ground
-    // First sky starts at bgScaledHeight.
-    // Calculate which sky slices overlap the camera viewport.
-    const startSkyIndex = Math.max(1, Math.floor((this.cameraY) / bgScaledHeight));
+    // 2. Draw sky backgrounds repeating endlessly above ground.
+    //    First sky (index=1) uses sky.png. All skies above (index>=2) use sky2.png.
+    //    Skies tile at exact bgScaledHeight intervals with no overlap between each other.
+    const startSkyIndex = Math.max(1, Math.floor(this.cameraY / bgScaledHeight));
     const endSkyIndex = Math.floor((this.cameraY + this.canvas.height) / bgScaledHeight) + 1;
 
     for (let index = startSkyIndex; index <= endSkyIndex; index++) {
       const skyWorldY = index * bgScaledHeight;
-      const skyScreenY = this.canvas.height - (skyWorldY + bgScaledHeight - this.cameraY);
-      
-      this.ctx.drawImage(this.skyBg, 0, skyScreenY, this.canvas.width, bgScaledHeight);
+      const skyScreenY = Math.round(this.canvas.height - (skyWorldY + bgScaledHeight - this.cameraY));
+      const img = index === 1 ? this.skyBg : this.sky2Bg;
+      this.ctx.drawImage(img, 0, skyScreenY, this.canvas.width, bgScaledHeight);
     }
   }
 
