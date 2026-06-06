@@ -665,24 +665,33 @@ export class GameEngine {
     }
   }
 
-  // Main game loop
+  // Main game loop — fixed timestep accumulator ensures 60fps on any refresh rate
   private lastFrameTs = 0;
-  private readonly FRAME_INTERVAL = 1000 / 60; // target 60fps
+  private accumulator = 0;
+  private readonly FIXED_DT = 1000 / 60;
   private gameLoop = (timestamp: number) => {
-    if (this.state !== 'PLAYING') return;
-    if (this.lastFrameTs === 0) this.lastFrameTs = timestamp;
-
-    // Cap at 60fps so high-refresh screens (120Hz) run at same speed
-    const elapsed = timestamp - this.lastFrameTs;
-    if (elapsed < this.FRAME_INTERVAL - 1) {
+    if (this.state !== 'PLAYING') {
+    this.lastFrameTs = 0;
+    this.accumulator = 0;
+      this.accumulator = 0;
+      return;
+    }
+    if (this.lastFrameTs === 0) {
+      this.lastFrameTs = timestamp;
       this.animId = requestAnimationFrame(this.gameLoop);
       return;
     }
-    this.lastFrameTs = timestamp - (elapsed % this.FRAME_INTERVAL);
 
-    this.update();
+    const elapsed = Math.min(timestamp - this.lastFrameTs, 50); // cap to avoid spiral
+    this.lastFrameTs = timestamp;
+    this.accumulator += elapsed;
+
+    while (this.accumulator >= this.FIXED_DT) {
+      this.update();
+      this.accumulator -= this.FIXED_DT;
+    }
+
     this.render();
-
     this.animId = requestAnimationFrame(this.gameLoop);
   };
 
