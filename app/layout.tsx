@@ -11,13 +11,14 @@ const pressStart = Press_Start_2P({
 
 const outfit = Outfit({
   subsets: ['latin'],
-  weight: ['300', '400', '600', '800'],
+  weight: ['200', '300', '400', '600', '800', '900'],
   variable: '--font-outfit',
 })
 
 export const metadata: Metadata = {
-  title: 'Omu Crazy Climber - Endless Retro Climber',
-  description: 'Scale the platforms and collect spinning gold coins in this pixel-art arcade climber.',
+  title: 'Omu Studio — Interactive Experiences & Game Design',
+  description:
+    'A creative studio crafting memorable digital experiences through game design, interactive technology, and bold visuals.',
   icons: {
     icon: '/idle.png',
     apple: '/idle.png',
